@@ -10,11 +10,11 @@
 *********************************************
 
 
-clear
+clear all
 set mem 100m
 cd "C:\My_Document\Dropbox\StataBook"
 
-insheet using sample2.csv, clear
+insheet using data/sample2.csv, clear
 
 gen strataID = 0
 
@@ -67,8 +67,8 @@ replace Stratum_Pop = 1759087 if strataID == 28
 replace Stratum_Pop = 623232 if strataID == 29
 replace Stratum_Pop = 180766 if strataID == 30
 
-
-log using tab_9_2.txt,replace text
+*** for table 9-2
+log using log/tab_9_2.txt,replace text
 
 tab Stratum_Pop
 
@@ -84,6 +84,91 @@ gen weight = 1
 survwgt poststratify weight, by(strataID) totvar( Stratum_Pop) replace
 
 svyset cityid [pweight=weight], strata(strataID)
-svydes
+
 
 svy: tab region citysize, percent format(%3.2f)
+
+*** for table 9-3
+log using log/tab_9_3.txt,replace text
+
+tab weight
+
+log close
+
+
+*** for table 9-4
+log using log/tab_9_4.txt,replace text
+
+svydes
+
+log close
+
+*** for table 9-5
+log using log/tab_9_5.txt,replace text
+
+tab citysize
+
+log close
+
+*** for table 9-6
+log using log/tab_9_6.txt,replace text
+
+svy: tabulate citysize, percent
+
+log close
+
+*** for table 9-7
+log using log/tab_9_7.txt,replace text
+
+tabulate region citysize, cell nofreq
+
+log close
+
+*** for table 9-8
+log using log/tab_9_8.txt,replace text
+
+svy: tabulate region citysize, percent format(%3.2f)
+
+log close
+
+*******************************************************************
+**
+** Analysis
+**
+*******************************************************************
+
+gen    SameLocation = q4
+recode SameLocation 2/7 = 0 9 = . 999 = .
+
+gen Urban = citysize
+recode Urban 1/3 = 1 4/5 = 0
+
+*** for table 9-9
+log using log/tab_9_9.txt,replace text
+
+tab Urban SameLocation, row
+
+log close
+
+*** for table 9-10
+log using log/tab_9_10.txt,replace text
+
+mean SameLocation
+
+log close
+
+
+*** for table 9-11
+log using log/tab_9_11.txt,replace text
+
+svy : tab Urban SameLocation, row
+
+log close
+
+*** for table 9-12
+log using log/tab_9_12.txt,replace text
+
+svy : mean SameLocation
+
+log close
+
