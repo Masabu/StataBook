@@ -2,6 +2,7 @@
 
 clear all
 set mem 50m
+set more off
 cd ~/StataBook
 
 insheet using data/sample2.csv, case name
@@ -13,15 +14,23 @@ insheet using data/sample2.csv, case name
 **
 *******************************************
 
+capture log close
+log using log/Recoding.log, replace text
 
-foreach var of varlist q1 q2 q3 q4 q6 q5 q5x1 q5x2{
+	tab1  q1 q2 q3 q4 q6 q5 q5x1 q5x2 q6,m
 
-  di "Recoding variable `var'" 
-  replace `var' = . if `var' == 999
-  replace `var' = . if `var' == 888
-  
-}
+	/*
+	foreach var of varlist q1 q2 q3 q4 q6 q5 q5x1 q5x2{
 
+		di "Recoding variable `var'" 
+		replace `var' = . if `var' == 999
+		replace `var' = . if `var' == 888  
+	}
+	*/
+
+log close
+
+ 
 
 /*
 set up environmental variable for imputation
@@ -44,8 +53,15 @@ mi set flong
 mi set M = 5
 set seed 9875783
 
+recode q3 999 = .
+recode q4 999 = .
+recode q5 999 = .
+recode q6 999 = .
+
 gen    EverWorked  = q5
 recode EverWorked 1/3 = 1 4 = 0
+
+
 
 mi register imputed q3 EverWorked  q6
 
@@ -116,6 +132,8 @@ odbc insert iter m q4_mean q4_sd q3_mean q3_sd ///
 */
 
   
+exit, clear
+
 
 
 
