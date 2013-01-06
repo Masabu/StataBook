@@ -47,6 +47,35 @@ set seed 9875783
 gen    EverWorked  = q5
 recode EverWorked 1/3 = 1 4 = 0
 
+mi register imputed q3 EverWorked  q6
+
+* q1 and q2 are binary
+* q3 and q4 can be viewed as ordinal
+* q5, Occupation and Industry are nominal
+
+mi impute chained                   ///
+(ologit                   , ascontinuous )  q3 q6  ///
+(logit                    ) EverWorked             ///
+  = q1 q2 , replace noisily
+
+
+log close
+
+
+  
+/*
+capture log close
+log using log/Imputation.log, replace text
+
+tab1 q1 q2 q3 q4 q6 q5 q5x1 q5x2 ,m
+
+mi set flong
+mi set M = 5
+set seed 9875783
+
+gen    EverWorked  = q5
+recode EverWorked 1/3 = 1 4 = 0
+
 gen    Occupation = q5x1
 recode Occupation 1 = 1 2 = 2 3/4 = 3 5/6 = 5 7/8 = 7
 
@@ -68,7 +97,8 @@ mi impute chained                   ///
 
 
 log close
-
+*/
+  
 
 
 
