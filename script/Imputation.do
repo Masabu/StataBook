@@ -7,6 +7,21 @@ cd ~/StataBook
 
 insheet using data/sample2.csv, case name
 
+/*
+set up environmental variable for imputation
+
+mi set mlong : this will create imputed observersation and add them in row,
+this is recommended way of creating imputed dataset.
+
+mi set M = 5 : create 5 imputed dataset.  5 will be sufficient. (Rubin, 1987)
+
+mi register : specify variables to be imputed
+
+*/
+
+mi set flong
+mi set M = 5
+set seed 9875783
 
 *******************************************
 **
@@ -28,54 +43,71 @@ log using log/Recoding.log, replace text
 	}
 	*/
 
-log close
-
- 
-
-/*
-set up environmental variable for imputation
-
-mi set mlong : this will create imputed observersation and add them in row,
-this is recommended way of creating imputed dataset.
-
-mi set M = 5 : create 5 imputed dataset.  5 will be sufficient. (Rubin, 1987)
-
-mi register : specify variables to be imputed
-
-*/
-
-capture log close
-log using log/Imputation.log, replace text
 
 tab1 q1 q2 q3 q4 q6 q5 q5x1 q5x2 ,m
-
-mi set flong
-mi set M = 5
-set seed 9875783
 
 recode q3 999 = .
 recode q4 999 = .
 recode q5 999 = .
 recode q6 999 = .
 
+recode  q10 999 = .
+recode  q10x1 888/999 = .
+recode  q10x2 888/999 = .
+replace q10x2num = . if q10x2num > 700
+
+tab q10 q10x1 if _mi_m ==0, m
+
+** rename variables into intuitive names
+** for better readability of outputs
+
+gen Gender     = q1
+gen AgeShowa   = q2
+gen Education  = q3
+gen Residency  = q4
+gen Income     = q6
+gen NumAddress = q10x2num 
+
+
 gen    EverWorked  = q5
 recode EverWorked 1/3 = 1 4 = 0
+ 
+gen     AddressBook = .
+replace AddressBook = 1 if q10 == 1 & q10x1 == 1
+replace AddressBook = 0 if q10 == 1 & q10x1 == 2
+replace AddressBook = 0 if q10 == 2
 
-
-
-mi register imputed q3 EverWorked  q6
-
-* q1 and q2 are binary
-* q3 and q4 can be viewed as ordinal
-* q5, Occupation and Industry are nominal
-
-mi impute chained                   ///
-(ologit                   , ascontinuous )  q3 q6  ///
-(logit                    ) EverWorked             ///
-  = q1 q2 , replace noisily
+tab NumAddress AddressBook if _mi_m == 0,m
 
 
 log close
+
+capture log close
+log using log/Imputation.log, replace text
+
+mi register imputed Education EverWorked Income AddressBook NumAddress
+
+* Binary  : Gender, Everworked, AddressBook
+* Ordinal : Education, Income 
+* Nominal :
+* Count   : NumAddress
+
+mi impute chained                   ///
+(ologit				, ascontinuous omit(NumAddress)) Education Income	///
+(logit				, ascontinuous omit(NumAddress))  EverWorked		///
+(logit				, ascontinuous omit(NumAddress))  AddressBook		///
+(poisson if AddressBook == 1	, omit(AddressBook)) NumAddress		///  
+  = Gender AgeShowa , replace noisily
+
+tab AddressBook _mi_m ,m
+
+su NumAddress if _mi_m == 0 ,de
+su NumAddress if _mi_m == 1 ,de
+
+
+log close
+
+
 
 
   
@@ -131,8 +163,13 @@ odbc insert iter m q4_mean q4_sd q3_mean q3_sd ///
  , table(Imputation_Test) dialog(complete) dsn(Nutria) create
 */
 
-  
-exit, clear
+clear all
+
+exit
+
+
+
+
 
 
 
