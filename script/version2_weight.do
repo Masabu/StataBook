@@ -15,55 +15,47 @@
 clear all
 version 15
 
-cd "/Users/masaaida/StataBook"
+cd "/home/masabu/StataBook"
 
-*** read population counts
+*** read target counts
 
-tempfile TARGET
+import delimited "data/target.tsv", clear 
 
-import delimited "/Users/masaaida/StataBook/data/target.tsv", clear 
-
-total population, over(citysize)
+total target, over(citysize)
 matrix total_citysize = e(b)
 matrix rownames total_citysize= citysize
 matrix list total_citysize
 
-total population, over(region)
+total target, over(region)
 matrix total_region = e(b)
 matrix rownames total_region=region
 matrix list total_region
 
-gen strata = region * 10 + citysize
+gen strataID = region  + citysize * 10
 
-total population, over(strata)
+total target, over(strataID)
 matrix total_strata = e(b)
-matrix rownames total_strata=strata
+matrix rownames total_strata=strataID
 matrix list total_strata
 
-* ave `TARGET'
-
-
 *** survey response
-
 insheet using data/sample2.csv, clear
 
-tab1 citysize region
+gen strataID = region + citysize* 10 
 
 gen weight = 1
+gen target = 1
 
 ** weight on the marignal of city size only
 ipfraking [pw=weight], ctotal(total_citysize) generate(rakedwgt1)
 
-
 ** weight on the marignal of region size only
 ipfraking [pw=weight], ctotal(total_region) generate(rakedwgt2)
-
 
 ** weight on the marignal of both citysize and region size 
 ipfraking [pw=weight], ctotal(total_citysize total_region) generate(rakedwgt3)
 
 
-gen strata = region * 10 + citysize
 ** weight on the marignal of both citysize and region size 
 ipfraking [pw=weight], ctotal(total_strata) generate(rakedwgt4)
 
@@ -75,7 +67,6 @@ program define myDeff,
 	** approximation by Kish 1992
 	
 	quietly: su `1'
-	
 	local DEFF = `r(Var)' / `r(mean)' / `r(mean)' + 1
 	
 	local N = `r(N)'
@@ -94,17 +85,6 @@ myDeff rakedwgt3
 myDeff rakedwgt4
 
 
-*  m:1 citysize region using `TARGET'
-
-
-
-*** for table 9-2
-log using log/tab_9_2.txt,replace text
-
-tab Stratum_Pop
-
-log close
-
 **************************************************
 **
 ** check set up
@@ -112,23 +92,26 @@ log close
 **************************************************
 
 
+svyset _n [pweight=weight]
+svy: tabulate citysize region, count format(%1.0f)
+
+svyset _n [pweight=rakedwgt1]
+svy: tabulate citysize region, count format(%1.0f)
+
+svyset _n [pweight=rakedwgt2]
+svy: tabulate citysize region, count format(%1.0f)
+
+svyset _n [pweight=rakedwgt3]
+svy: tabulate citysize region, count format(%1.0f)
+
+svyset _n [pweight=rakedwgt4]
+svy: tabulate citysize region, count format(%1.0f)
 
 
 
 
-gen weight = 1
-survwgt poststratify weight, by(strataID) totvar( Stratum_Pop) replace
 
-
-
-
-
-
-
-svyset cityid [pweight=weight], strata(strataID)
-
-
-svy: tab region citysize, percent format(%3.2f)
+/*
 
 *** for table 9-3
 log using log/tab_9_3.txt,replace text
@@ -213,4 +196,8 @@ log using log/tab_9_12.txt,replace text
 svy : mean SameLocation
 
 log close
+
+*/
+
+
 

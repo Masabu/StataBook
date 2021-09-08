@@ -1,4 +1,4 @@
-population	strataID	citysize	city label	region	region label
+target	strataID	citysize	city label	region	region label
 1910605	1	1	14大都市	1	北海道・東北
 5190967	2	2	その他の市	1	北海道・東北
 1806037	3	3	10000以上	1	北海道・東北
