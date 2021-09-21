@@ -5,41 +5,40 @@
 **
 ** revised for 2nd edition
 **
-** Masa Aida   Oct 2012
+** Masa Aida   SEPT 20TH
 ** 
-** Revised again in 2021
 **
 *********************************************
 
 
 clear all
-version 15
 
-cd "/home/masabu/StataBook"
 
 *** read target counts
+*** this is github repo for the book
 
-import delimited "data/target.tsv", clear 
+import delimited https://raw.githubusercontent.com/Masabu/StataBook/master/data/target.csv, clear 
 
-total target, over(citysize)
+version 14:total target, over(citysize)
 matrix total_citysize = e(b)
 matrix rownames total_citysize= citysize
 matrix list total_citysize
 
-total target, over(region)
+version 14:total target, over(region)
 matrix total_region = e(b)
 matrix rownames total_region=region
 matrix list total_region
 
 gen strataID = region  + citysize * 10
 
-total target, over(strataID)
+version 14:total target, over(strataID)
 matrix total_strata = e(b)
 matrix rownames total_strata=strataID
 matrix list total_strata
 
-*** survey response
-insheet using data/sample2.csv, clear
+*** read survey response
+*** this is github repo for the book
+insheet using https://raw.githubusercontent.com/Masabu/StataBook/master/data/sample2.csv, clear
 
 gen strataID = region + citysize* 10 
 
