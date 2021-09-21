@@ -67,18 +67,18 @@ program define myDeff,
 	** approximation by Kish 1992
 	
 	quietly: su `1'
-	local DEFF = `r(Var)' / `r(mean)' / `r(mean)' + 1
+	local DEFF = `r(Var)' / `r(mean)' / `r(mean)' + 1 
 	
 	local N = `r(N)'
-	local N_effective = round(`r(N)' / `DEFF')
+	local N_effective = `r(N)' / `DEFF'
 	
-	display "design effect is `DEFF'"
+	display "design effect is " %3.2f  `DEFF'
 	display "Nominal N-size is `N'"
-	display "Effective N-size is `N_effective'"
+	display "Effective N-size is " %3.0f   `N_effective'
 
 end
 
-
+myDeff weight
 myDeff rakedwgt1
 myDeff rakedwgt2
 myDeff rakedwgt3
@@ -92,19 +92,19 @@ myDeff rakedwgt4
 **************************************************
 
 
-svyset _n [pweight=weight]
+svyset _n [pweight=weight] ,  strata(strataID)
 svy: tabulate citysize region, count format(%1.0f)
 
-svyset _n [pweight=rakedwgt1]
+svyset _n [pweight=rakedwgt1] ,  strata(strataID) 
 svy: tabulate citysize region, count format(%1.0f)
 
-svyset _n [pweight=rakedwgt2]
+svyset _n [pweight=rakedwgt2] ,  strata(strataID)
 svy: tabulate citysize region, count format(%1.0f)
 
-svyset _n [pweight=rakedwgt3]
+svyset _n [pweight=rakedwgt3] ,  strata(strataID)
 svy: tabulate citysize region, count format(%1.0f)
 
-svyset _n [pweight=rakedwgt4]
+svyset _n [pweight=rakedwgt4] ,  strata(strataID)
 svy: tabulate citysize region, count format(%1.0f)
 
 
@@ -154,7 +154,7 @@ log using log/tab_9_8.txt,replace text
 
 svy: tabulate region citysize, percent format(%3.2f)
 
-log close
+log closedf
 
 *******************************************************************
 **
